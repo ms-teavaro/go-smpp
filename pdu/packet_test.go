@@ -5,7 +5,7 @@ import (
 	"encoding/hex"
 	"testing"
 
-	. "github.com/M2MGateway/go-smpp/coding"
+	. "github.com/Teavaro/go-smpp/coding"
 	"github.com/stretchr/testify/require"
 )
 

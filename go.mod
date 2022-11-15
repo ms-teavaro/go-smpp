@@ -1,4 +1,4 @@
-module github.com/M2MGateway/go-smpp
+module github.com/Teavaro/go-smpp
 
 go 1.19
 

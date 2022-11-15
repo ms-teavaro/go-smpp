@@ -8,7 +8,7 @@ import (
 	"sync"
 	"time"
 
-	"github.com/M2MGateway/go-smpp/pdu"
+	"github.com/Teavaro/go-smpp/pdu"
 )
 
 type Session struct {

@@ -3,8 +3,8 @@ package bridge
 import (
 	"bytes"
 
-	"github.com/M2MGateway/go-smpp/pdu"
-	"github.com/M2MGateway/go-smpp/sms"
+	"github.com/Teavaro/go-smpp/pdu"
+	"github.com/Teavaro/go-smpp/sms"
 )
 
 func ToSubmit(sm *pdu.SubmitSM) (submit *sms.Submit, err error) {

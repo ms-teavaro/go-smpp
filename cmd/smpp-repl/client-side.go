@@ -9,9 +9,9 @@ import (
 	"net"
 	"time"
 
-	"github.com/M2MGateway/go-smpp"
-	"github.com/M2MGateway/go-smpp/coding"
-	"github.com/M2MGateway/go-smpp/pdu"
+	"github.com/Teavaro/go-smpp"
+	"github.com/Teavaro/go-smpp/coding"
+	"github.com/Teavaro/go-smpp/pdu"
 	"github.com/abiosoft/ishell"
 	"github.com/davecgh/go-spew/spew"
 )

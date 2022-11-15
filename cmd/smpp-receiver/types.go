@@ -5,7 +5,7 @@ import (
 	"fmt"
 	"time"
 
-	"github.com/M2MGateway/go-smpp/pdu"
+	"github.com/Teavaro/go-smpp/pdu"
 )
 
 type Configuration struct {

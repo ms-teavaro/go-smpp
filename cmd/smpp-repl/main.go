@@ -1,7 +1,7 @@
 package main
 
 import (
-	"github.com/M2MGateway/go-smpp"
+	"github.com/Teavaro/go-smpp"
 	"github.com/abiosoft/ishell"
 )
 
