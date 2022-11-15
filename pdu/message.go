@@ -7,7 +7,7 @@ import (
 	"io"
 	"reflect"
 
-	. "github.com/Teavaro/go-smpp/coding"
+	. "github.com/ms-teavaro/go-smpp/coding"
 )
 
 type ShortMessage struct {

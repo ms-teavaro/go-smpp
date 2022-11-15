@@ -4,7 +4,7 @@ import (
 	"fmt"
 	. "unicode"
 
-	"github.com/Teavaro/go-smpp/coding/gsm7bit"
+	"github.com/ms-teavaro/go-smpp/coding/gsm7bit"
 	. "golang.org/x/text/encoding"
 	"golang.org/x/text/encoding/charmap"
 	"golang.org/x/text/encoding/japanese"

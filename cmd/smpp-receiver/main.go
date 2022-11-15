@@ -13,8 +13,8 @@ import (
 	"sync"
 	"time"
 
-	"github.com/Teavaro/go-smpp"
-	"github.com/Teavaro/go-smpp/pdu"
+	"github.com/ms-teavaro/go-smpp"
+	"github.com/ms-teavaro/go-smpp/pdu"
 	"github.com/imdario/mergo"
 	. "github.com/xeipuuv/gojsonschema"
 )

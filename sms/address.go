@@ -5,8 +5,8 @@ import (
 	"bytes"
 	"io"
 
-	"github.com/Teavaro/go-smpp/coding/gsm7bit"
-	"github.com/Teavaro/go-smpp/coding/semioctet"
+	"github.com/ms-teavaro/go-smpp/coding/gsm7bit"
+	"github.com/ms-teavaro/go-smpp/coding/semioctet"
 )
 
 type Address struct {

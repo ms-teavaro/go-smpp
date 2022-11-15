@@ -6,7 +6,7 @@ import (
 	"io"
 	"time"
 
-	"github.com/Teavaro/go-smpp/coding/semioctet"
+	"github.com/ms-teavaro/go-smpp/coding/semioctet"
 )
 
 type Time struct{ time.Time }

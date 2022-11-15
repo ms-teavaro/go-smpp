@@ -3,7 +3,7 @@ package pdu
 import (
 	"fmt"
 
-	. "github.com/Teavaro/go-smpp/coding"
+	. "github.com/ms-teavaro/go-smpp/coding"
 )
 
 func ComposeMultipartShortMessage(input string, coding DataCoding, reference uint16) (parts []ShortMessage, err error) {

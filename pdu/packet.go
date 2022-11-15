@@ -1,6 +1,6 @@
 package pdu
 
-import . "github.com/Teavaro/go-smpp/coding"
+import . "github.com/ms-teavaro/go-smpp/coding"
 
 type Responsable interface {
 	Resp() any
