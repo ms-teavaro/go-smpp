@@ -2,7 +2,9 @@ package smpp
 
 import (
 	"context"
+	"fmt"
 	"io"
+	"log"
 	"math/rand"
 	"net"
 	"sync"
@@ -36,7 +38,7 @@ func NewSession(ctx context.Context, parent net.Conn) (session *Session) {
 }
 
 //goland:noinspection SpellCheckingInspection
-func (c *Session) watch(ctx context.Context) {
+func (s *Session) watch(ctx context.Context) {
 	var err error
 	var packet any
 	for {
@@ -45,60 +47,67 @@ func (c *Session) watch(ctx context.Context) {
 			return
 		default:
 		}
-		if c.ReadTimeout > 0 {
-			_ = c.parent.SetReadDeadline(time.Now().Add(c.ReadTimeout))
+		if s.ReadTimeout > 0 {
+			_ = s.parent.SetReadDeadline(time.Now().Add(s.ReadTimeout))
 		}
-		if packet, err = pdu.Unmarshal(c.parent); err == io.EOF {
+		if packet, err = pdu.Unmarshal(s.parent); err == io.EOF {
 			return
 		}
 		if packet == nil {
 			continue
 		}
 		if status, ok := err.(pdu.CommandStatus); ok {
-			_ = c.Send(&pdu.GenericNACK{
+			_ = s.Send(&pdu.GenericNACK{
 				Header: pdu.Header{CommandStatus: status, Sequence: pdu.ReadSequence(packet)},
 				Tags:   pdu.Tags{0xFFFF: []byte(err.Error())},
 			})
 			continue
 		}
-		if callback, ok := c.pending[pdu.ReadSequence(packet)]; ok {
+		if callback, ok := s.pending[pdu.ReadSequence(packet)]; ok {
 			callback(packet)
 		} else {
-			c.receiveQueue <- packet
+			s.receiveQueue <- packet
 		}
 	}
 }
 
-func (c *Session) Submit(ctx context.Context, packet pdu.Responsable) (resp any, err error) {
-	c.pendingLock.Lock()
-	defer c.pendingLock.Unlock()
-	sequence := c.NextSequence()
+func (s *Session) Submit(ctx context.Context, packet pdu.Responsable) (resp any, err error) {
+	log.Println("waiting for pending lock")
+	s.pendingLock.Lock()
+	log.Println("got pending lock")
+	defer func() {
+		log.Println("unlocking pending lock")
+		s.pendingLock.Unlock()
+	}()
+	sequence := s.NextSequence()
 	pdu.WriteSequence(packet, sequence)
-	if err = c.Send(packet); err != nil {
+	if err = s.Send(packet); err != nil {
 		return
 	}
 	returns := make(chan any, 1)
-	c.pending[sequence] = func(resp any) { returns <- resp }
-	defer delete(c.pending, sequence)
+	s.pending[sequence] = func(resp any) {
+		returns <- resp
+	}
+	defer delete(s.pending, sequence)
 	select {
 	case <-ctx.Done():
-		err = ErrConnectionClosed
+		err = ErrContextDone
 	case resp = <-returns:
 	}
 	return
 }
 
-func (c *Session) Send(packet any) (err error) {
+func (s *Session) Send(packet any) (err error) {
 	sequence := pdu.ReadSequence(packet)
 	if sequence == 0 || sequence < 0 {
 		err = pdu.ErrInvalidSequence
 		return
 	}
-	if c.WriteTimeout > 0 {
-		err = c.parent.SetWriteDeadline(time.Now().Add(c.WriteTimeout))
+	if s.WriteTimeout > 0 {
+		err = s.parent.SetWriteDeadline(time.Now().Add(s.WriteTimeout))
 	}
 	if err == nil {
-		_, err = pdu.Marshal(c.parent, packet)
+		_, err = pdu.Marshal(s.parent, packet)
 	}
 	if err == io.EOF {
 		err = ErrConnectionClosed
@@ -106,31 +115,35 @@ func (c *Session) Send(packet any) (err error) {
 	return
 }
 
-func (c *Session) EnquireLink(ctx context.Context, tick time.Duration, timeout time.Duration) (err error) {
+func (s *Session) EnquireLink(ctx context.Context, tick time.Duration, timeout time.Duration) (err error) {
 	ticker := time.NewTicker(tick)
 	defer ticker.Stop()
 	for {
 		ctx, cancel := context.WithTimeout(ctx, timeout)
-		if _, err = c.Submit(ctx, new(pdu.EnquireLink)); err != nil {
+		if _, err = s.Submit(ctx, new(pdu.EnquireLink)); err != nil {
+			log.Println("enquireLink: submit failed:", err)
 			ticker.Stop()
-			err = c.Close(ctx)
+			err = s.Close(ctx)
+			if err != nil {
+				log.Println("enquireLink: session close failed:", err)
+			}
 		}
 		cancel()
 		<-ticker.C
 	}
 }
 
-func (c *Session) Close(ctx context.Context) (err error) {
+func (s *Session) Close(ctx context.Context) (err error) {
 	ctx, cancel := context.WithTimeout(ctx, time.Second)
 	defer cancel()
-	_, err = c.Submit(ctx, new(pdu.Unbind))
+	_, err = s.Submit(ctx, new(pdu.Unbind))
 	if err != nil {
-		return
+		return fmt.Errorf("submit failed in close: %w", err)
 	}
-	close(c.receiveQueue)
-	return c.parent.Close()
+	close(s.receiveQueue)
+	return s.parent.Close()
 }
 
-func (c *Session) PDU() <-chan any {
-	return c.receiveQueue
+func (s *Session) PDU() <-chan any {
+	return s.receiveQueue
 }
