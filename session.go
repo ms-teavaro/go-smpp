@@ -72,13 +72,8 @@ func (s *Session) watch(ctx context.Context) {
 }
 
 func (s *Session) Submit(ctx context.Context, packet pdu.Responsable) (resp any, err error) {
-	log.Println("waiting for pending lock")
 	s.pendingLock.Lock()
-	log.Println("got pending lock")
-	defer func() {
-		log.Println("unlocking pending lock")
-		s.pendingLock.Unlock()
-	}()
+	defer s.pendingLock.Unlock()
 	sequence := s.NextSequence()
 	pdu.WriteSequence(packet, sequence)
 	if err = s.Send(packet); err != nil {
